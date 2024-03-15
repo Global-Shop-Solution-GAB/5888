@@ -1,0 +1,489 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.frmWithoutRouter..Create
+Gui.frmWithoutRouter..Caption("Part & BOM Without Router")
+Gui.frmWithoutRouter..Size(15030,9870)
+Gui.frmWithoutRouter..MinX(15045)
+Gui.frmWithoutRouter..MinY(10095)
+Gui.frmWithoutRouter..Position(0,0)
+Gui.frmWithoutRouter..BackColor(-2147483633)
+Gui.frmWithoutRouter..MousePointer(0)
+Gui.frmWithoutRouter..Event(UnLoad,Unload)
+Gui.frmWithoutRouter.picGSSLogo.Create(PictureBox)
+Gui.frmWithoutRouter.picGSSLogo.Size(7905,795)
+Gui.frmWithoutRouter.picGSSLogo.Position(6660,45)
+Gui.frmWithoutRouter.lblStatus.Create(Label,"Loading Data....",False,1935,255,0,1380,135,True,0,"Arial",8,-2147483633,0)
+Gui.frmWithoutRouter.pbStatus.Create(ProgressBar)
+Gui.frmWithoutRouter.pbStatus.Size(1815,255)
+Gui.frmWithoutRouter.pbStatus.Position(1365,435)
+Gui.frmWithoutRouter.pbStatus.Visible(False)
+Gui.frmWithoutRouter.cmdRefresh.Create(Button)
+Gui.frmWithoutRouter.cmdRefresh.Size(975,345)
+Gui.frmWithoutRouter.cmdRefresh.Position(120,330)
+Gui.frmWithoutRouter.cmdRefresh.Caption("REFRESH")
+Gui.frmWithoutRouter.cmdRefresh.Event(Click,LoadRecords)
+Gui.frmWithoutRouter.cmdRefresh.TabStop(True)
+Gui.frmWithoutRouter.cmdRefresh.TabIndex(3)
+Gui.frmWithoutRouter.tab1.Create(Tab)
+Gui.frmWithoutRouter.tab1.Size(14685,8355)
+Gui.frmWithoutRouter.tab1.Position(60,915)
+Gui.frmWithoutRouter.tab1.Tabs(2)
+Gui.frmWithoutRouter.tab1.SetTab(0)
+Gui.frmWithoutRouter.tab1.Caption("Inventory")
+Gui.frmWithoutRouter.tab1.SetTab(1)
+Gui.frmWithoutRouter.tab1.Caption("BOM")
+Gui.frmWithoutRouter.GsGCInventory.Create(GsGridControl)
+Gui.frmWithoutRouter.GsGCInventory.Size(14520,7530)
+Gui.frmWithoutRouter.GsGCInventory.Position(30,30)
+Gui.frmWithoutRouter.GsGCInventory.TabStop(True)
+Gui.frmWithoutRouter.GsGCInventory.Parent("tab1",0)
+Gui.frmWithoutRouter.GsGCBOM.Create(GsGridControl)
+Gui.frmWithoutRouter.GsGCBOM.Size(14520,7470)
+Gui.frmWithoutRouter.GsGCBOM.Position(0,30)
+Gui.frmWithoutRouter.GsGCBOM.Parent("tab1",1)
+Gui.frmWithoutRouter.GsGCBOM.TabStop(True)
+Gui.frmWithoutRouter.GsGCBOM.TabIndex(1)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+	V.Global.bLoadDate.Declare
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	V.Local.sGSSLogo.Declare
+	V.Local.sIcon.Declare
+	V.Local.sDir.Declare
+	V.Local.bDir.Declare
+	V.Local.i1.Declare
+	V.Local.dLastMonth.Declare
+
+	F.Intrinsic.String.Build("{0}\GAB\GAS\gss2.ico",V.Caller.PluginsDir,v.Local.sIcon)
+	F.Intrinsic.String.Build("{0}\GAB\GAS\GAB_GSS_Logo_Green_Dash.png",V.Caller.PluginsDir,V.Local.sGssLogo)
+	Gui.frmWithoutRouter.picGSSLogo.Picture(V.Local.sGSSLogo)
+	Gui.frmWithoutRouter..Icon(V.Local.sIcon)
+	'Gui.frmTotalsPL..Icon(V.Local.sIcon)
+
+	F.Intrinsic.Control.CallSub(SetAnchors)
+	F.Intrinsic.Control.CallSub(SetContextMenus)
+	
+	Gui.frmWithoutRouter..Show
+	Gui.frmWithoutRouter.tab1.SetTab(0)
+	F.Intrinsic.Control.CallSub(SetTabAnchors)	
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Unload.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+'	F.ODBC.Connection!con.Close
+
+	F.Intrinsic.Control.If(V.Global.bLoadDate)
+		F.Intrinsic.Control.CallSub(Serialize)
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.Unload.End
+
+Program.Sub.SetAnchors.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	'0 - None
+	'1 - Top
+	'2 - Bottom
+	'4 - Left
+	'8 - Right
+
+	Gui.frmWithoutRouter.picGssLogo.Anchor(1)
+	Gui.frmWithoutRouter.tab1.Anchor(15)
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.SetAnchors.End
+
+Program.Sub.SetTabAnchors.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+	
+	'0 - None
+	'1 - Top
+	'2 - Bottom
+	'4 - Left
+	'8 - Right
+
+	Gui.frmWithoutRouter.GsGCInventory.Anchor(15)
+	Gui.frmWithoutRouter.GsGCBOM.Anchor(15)
+	
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.SetTabAnchors.End
+
+Program.Sub.SetContextMenus.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	Gui.frmWithoutRouter..ContextMenuCreate("CTXINVENTORY")
+	Gui.frmWithoutRouter.GsGCInventory.ContextMenuAttach("CTXINVENTORY")
+	Gui.frmWithoutRouter..ContextMenuAddItem("CTXINVENTORY","Refresh",0,"Refresh")
+	Gui.frmWithoutRouter..ContextMenuAddItem("CTXINVENTORY","Export",0,"Export")
+	Gui.frmWithoutRouter..ContextMenuAddItem("CTXINVENTORY","ResetColumns",0,"Reset Columns")
+	Gui.frmWithoutRouter..ContextMenuSetItemEventHandler("CTXINVENTORY","Refresh","LoadRecords")
+	Gui.frmWithoutRouter..ContextMenuSetItemEventHandler("CTXINVENTORY","Export","MenuClickExport")
+	Gui.frmWithoutRouter..ContextMenuSetItemEventHandler("CTXINVENTORY","ResetColumns","MenuClickResetColumns")
+
+	Gui.frmWithoutRouter..ContextMenuCreate("CTXBOM")
+	Gui.frmWithoutRouter.GsGCBOM.ContextMenuAttach("CTXBOM")
+	Gui.frmWithoutRouter..ContextMenuAddItem("CTXBOM","Refresh",0,"Refresh")
+	Gui.frmWithoutRouter..ContextMenuAddItem("CTXBOM","Export",0,"Export")
+	Gui.frmWithoutRouter..ContextMenuAddItem("CTXBOM","ResetColumns",0,"Reset Columns")
+	Gui.frmWithoutRouter..ContextMenuSetItemEventHandler("CTXBOM","Refresh","LoadRecords")
+	Gui.frmWithoutRouter..ContextMenuSetItemEventHandler("CTXBOM","Export","MenuClickExport")
+	Gui.frmWithoutRouter..ContextMenuSetItemEventHandler("CTXBOM","ResetColumns","MenuClickResetColumns")
+	
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.SetContextMenus.End
+
+Program.Sub.MenuClickExport.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	V.Local.sFileExport.Declare
+	V.Local.bExcel.Declare
+	V.Local.bFileLocked.Declare
+	V.Local.sMsg.Declare
+	V.Local.sControl.Declare
+
+	F.Intrinsic.Control.SelectCase(V.Args.MenuName)
+		F.Intrinsic.Control.Case("CTXINVENTORY")
+		F.Automation.MSExcel.CheckPresence(V.Local.bExcel)
+		F.Intrinsic.Control.If(V.Local.bExcel,=,TRUE)
+			F.Intrinsic.String.Build("{0}\GAB_Without_Router_{1}_Export.xlsx",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked,=,TRUE)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.frmWithoutRouter.GsGCInventory.Export(V.Local.sFileExport,"xlsx")
+				F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{0}\GAB_Without_Router_{1}_Export.csv",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked,=,TRUE)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.frmWithoutRouter.GsGCInventory.Export(V.Local.sFileExport,"csv")
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+		F.Intrinsic.Control.EndIf
+
+		F.Intrinsic.Control.Case("CTXBOM")
+		F.Automation.MSExcel.CheckPresence(V.Local.bExcel)
+		F.Intrinsic.Control.If(V.Local.bExcel,=,TRUE)
+			F.Intrinsic.String.Build("{0}\GAB_Without_Router_{1}_Export.xlsx",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked,=,TRUE)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.frmWithoutRouter.GsGCBOM.Export(V.Local.sFileExport,"xlsx")
+				F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{0}\GAB_Without_Router_{1}_Export.csv",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked,=,TRUE)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.frmWithoutRouter.GsGCBOM.Export(V.Local.sFileExport,"csv")
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+		F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.MenuClickExport.End
+
+Program.Sub.MenuClickResetColumns.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	V.Local.bSerialize.Declare
+
+	F.Intrinsic.Control.SelectCase(V.Args.MenuName)
+		F.Intrinsic.Control.Case("CTXINVENTORY")
+			F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"gvInventory",4631,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,"")
+		F.Intrinsic.Control.Case("CTXBOM")
+			F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"gvBOM",4631,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,"")
+	F.Intrinsic.Control.EndSelect
+	
+	V.Global.bLoadDate.Set(False)
+	F.Intrinsic.Control.CallSub(LoadRecords)
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.MenuClickResetColumns.End
+
+Program.Sub.LoadRecords.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	V.Local.sSQL.Declare
+	V.Local.dBegDate.Declare
+	V.Local.dEndDate.Declare
+	V.Local.sPart.Declare
+	V.Local.sAccrual.Declare
+	V.Local.sPrevAccrual.Declare
+	V.Local.sOpenInv.Declare
+	V.Local.sPrevOpenInv.Declare
+	V.Local.sInvoice.Declare
+	V.Local.sActiveFilterString.Declare
+	V.Local.fBreak.Declare
+	V.Local.iMonth.Declare
+	V.Local.iYear.Declare
+	V.Local.iPrevYear.Declare
+	V.Local.iPrevMonth.Declare
+	V.Local.iPrevSYear.Declare
+
+	Gui.frmWithoutRouter.lblStatus.Visible(True)
+	Gui.frmWithoutRouter.pbStatus.Visible(True)
+	Gui.frmWithoutRouter.pbStatus.Min(0)
+	Gui.frmWithoutRouter.pbStatus.Max(100)
+	
+	'Gui.frmWithoutRouter..Visible(False)
+
+	F.Intrinsic.Control.If(V.Global.bLoadDate)
+		F.Intrinsic.Control.CallSub(Serialize)
+	F.Intrinsic.Control.EndIf
+	V.Global.bLoadDate.Set(True)
+
+	F.Intrinsic.Control.If(V.DataTable.dtPartlySales.Exists)
+		F.Data.DataTable.Close("dtPart")	
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.If(V.DataTable.dtBOM.Exists)
+		F.Data.DataTable.Close("dtBOM")	
+	F.Intrinsic.Control.EndIf
+		
+	F.ODBC.Connection!con.OpenCompanyConnection(300)
+
+	'Find Inventory Records
+	F.Data.DataTable.CreateFromSQL("dtPart","con","SELECT A.PART, B.PART_CREATE_DATE, A.DESCRIPTION FROM V_INVENTORY_MSTR A LEFT JOIN V_INVENTORY_MST3 B ON A.PART = B.PART WHERE A.PART NOT IN (SELECT ROUTER FROM V_ROUTER_HEADER)",4)
+
+	Gui.frmWithoutRouter.pbStatus.Value(10)
+
+	'Find BOM Records
+
+	F.Data.DataTable.CreateFromSQL("dtBom","con","SELECT A.Parent, B.DESCRIPTION FROM V_BOM_MSTR A LEFT JOIN V_BOM_ENG B ON A.PARENT = B.PART WHERE PARENT NOT IN (SELECT ROUTER FROM V_ROUTER_HEADER) and A.SEQUENCE_BOM = '0000'",4)
+
+	Gui.frmWithoutRouter.pbStatus.Value(50)
+
+	F.ODBC.Connection!con.Close
+
+	Gui.frmWithoutRouter.pbStatus.Value(90)
+	F.Intrinsic.Control.CallSub(loadgvInventory)
+	F.Intrinsic.Control.CallSub(LoadgvBOM)
+	F.Intrinsic.Control.CallSub(Deserialize)
+	Gui.frmWithoutRouter.pbStatus.Value(100)
+	Gui.frmWithoutRouter.lblStatus.Visible(False)
+	Gui.frmWithoutRouter.pbStatus.Visible(False)
+	
+	'Gui.frmWithoutRouter..Visible(True)
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.LoadRecords.End
+
+Program.Sub.LoadgvInventory.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	Gui.frmWithoutRouter.GsGCInventory.AddGridviewFromDatatable("gvInventory","dtPart")
+	Gui.frmWithoutRouter.GsGCInventory.SuspendLayout()
+	Gui.frmWithoutRouter.GsGCInventory.SetGridViewProperty("gvInventory","MultiSelect",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetGridViewProperty("gvInventory","AllowSort",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetGridViewProperty("gvInventory","AllowFilter",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetGridViewProperty("gvInventory","ShowGroupPanel",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetGridViewProperty("gvInventory","EnableAppearanceOddRow",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetGridViewProperty("gvInventory","OptionsViewColumnAutoWidth",False)
+
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART","VisibleIndex","0")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","VisibleIndex","1")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","DESCRIPTION","VisibleIndex","2")
+
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART","Caption","Part")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","Caption","Create Date")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","DESCRIPTION","Caption","Description")
+
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART","AllowEdit",False)
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","AllowEdit",False)
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","DESCRIPTION","AllowEdit",False)
+
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART","ReadOnly",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","ReadOnly",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","DESCRIPTION","ReadOnly",True)
+
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART","MinWidth","150")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","MinWidth","70")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","DESCRIPTION","MinWidth","200")
+
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART","HeaderFontBold",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","HeaderFontBold",True)
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","DESCRIPTION","HeaderFontBold",True)
+
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART","HeaderHAlignment","Center")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","HeaderHAlignment","Center")
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","DESCRIPTION","HeaderHAlignment","Center")
+	
+	Gui.frmWithoutRouter.GsGCInventory.SetColumnProperty("gvInventory","PART_CREATE_DATE","DisplayCustomDatetime","d")	
+
+	Gui.frmWithoutRouter.GsGCInventory.ResumeLayout()
+	Gui.frmWithoutRouter.GsGCInventory.MainView("gvInventory")
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.LoadgvInventory.End
+
+Program.Sub.LoadgvBOM.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	Gui.frmWithoutRouter.GsGCBOM.AddGridviewFromDatatable("gvBOM","dtBom")
+	Gui.frmWithoutRouter.GsGCBOM.SuspendLayout()
+	Gui.frmWithoutRouter.GsGCBOM.SetGridViewProperty("gvBOM","MultiSelect",True)
+	Gui.frmWithoutRouter.GsGCBOM.SetGridViewProperty("gvBOM","AllowSort",True)
+	Gui.frmWithoutRouter.GsGCBOM.SetGridViewProperty("gvBOM","AllowFilter",True)
+	Gui.frmWithoutRouter.GsGCBOM.SetGridViewProperty("gvBOM","ShowGroupPanel",True)
+	Gui.frmWithoutRouter.GsGCBOM.SetGridViewProperty("gvBOM","EnableAppearanceOddRow",True)
+	Gui.frmWithoutRouter.GsGCBOM.SetGridViewProperty("gvBOM","OptionsViewColumnAutoWidth",False)
+
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","PARENT","VisibleIndex","0")
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","DESCRIPTION","VisibleIndex","1")
+
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","PARENT","Caption","Part")
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","DESCRIPTION","Caption","Description")
+
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","PARENT","AllowEdit",False)
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","DESCRIPTION","AllowEdit",False)
+
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","PARENT","ReadOnly",True)
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","DESCRIPTION","ReadOnly",True)
+
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","PARENT","MinWidth","150")
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","DESCRIPTION","MinWidth","200")
+
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","PARENT","HeaderFontBold",True)
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","DESCRIPTION","HeaderFontBold",True)
+
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","PARENT","HeaderHAlignment","Center")
+	Gui.frmWithoutRouter.GsGCBOM.SetColumnProperty("gvBOM","DESCRIPTION","HeaderHAlignment","Center")
+
+	Gui.frmWithoutRouter.GsGCBOM.ResumeLayout()
+	Gui.frmWithoutRouter.GsGCBOM.MainView("gvBOM")
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.LoadgvBOM.End
+
+Program.Sub.Serialize.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	V.Local.sSerialize.Declare
+
+	'gvInventory
+	Gui.frmWithoutRouter.GsGCInventory.Serialize("gvInventory",V.Local.sSerialize)
+	F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"gvInventory",4631,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.sSerialize)
+
+	'gvBOM
+	Gui.frmWithoutRouter.GsGCBOM.Serialize("gvBOM",V.Local.sSerialize)
+	F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"gvBOM",4631,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.sSerialize)
+	
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.Serialize.End
+
+Program.Sub.Deserialize.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+
+	V.Local.sSerialize.Declare
+
+	'gvInventory
+	F.Global.Registry.ReadValue(V.Caller.User,V.Caller.CompanyCode,"gvInventory",4631,1000,6,"",V.Local.sSerialize)
+	F.Intrinsic.Control.If(V.Local.sSerialize.Trim,<>,"")
+		Gui.frmWithoutRouter.GsGCInventory.Deserialize(V.Local.sSerialize)
+	F.Intrinsic.Control.EndIf
+
+	'gvBOM
+	F.Global.Registry.ReadValue(V.Caller.User,V.Caller.CompanyCode,"gvBOM",4631,1000,6,"",V.Local.sSerialize)
+	F.Intrinsic.Control.If(V.Local.sSerialize.Trim,<>,"")
+		Gui.frmWithoutRouter.GsGCBOM.Deserialize(V.Local.sSerialize)
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.EndTry
+Program.Sub.Deserialize.End
+
+Program.Sub.Comments.Start
+${$0$}$GAB_RTR_BOM.g2u$}$DYUNUS$}$11/11/2019 1:25:04 PM$}$True
+${$3$}$0$}$$}$0$}$-1$}$$}$12:00:00 AM$}$Find Part without router and BOM without router
+${$5$}$2.0.0.0$}$2
+${$6$}$dduncan$}$20220401102259839$}$r0o+00bj735YsiGsQ60YIo/Zb+26OZQGzszNTxUmRL9w0FVTj3802R6QSS6JZ5VO7Yy0WoO6Wjo=
+Program.Sub.Comments.End
